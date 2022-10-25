@@ -22,11 +22,13 @@ class KripkeStructure:
         else:
             raise TypeError
 
+    # TODO this returns minimun set. Maybe I need te set entirely.
     def solve(self, formula):
         """Returns a Kripke structure with minimum sub set of nodes, that each
         of it's nodes forces a given formula.
         """
-        for i, subset in enumerate(self.get_power_set_of_worlds()):
+        worlds = self.get_power_set_of_worlds()
+        for i, subset in enumerate(worlds):
             ks = KripkeStructure(self.worlds.copy(), copy.deepcopy(self.relations))
             for element in subset:
                 ks.remove_node_by_name(element)
