@@ -1,4 +1,4 @@
-from mlsolver.formula import Atom, Box_a, And
+from mlsolver.formula import Atom, Box_a, And, Diamond_a
 from mlsolver.kripke import KripkeStructure, World
 
 
@@ -39,10 +39,16 @@ def test_semantic_box_a_true():
     g = Box_a('sally', Atom('In(CubeRed,Box1)'))
     h = Box_a('annie', Atom('In(CubeRed,Box2)'))
     i = Box_a('annie', And(Atom('In(CubeRed,Box1)'),Atom('In(CubeRed,Box1)')))
+    a = Diamond_a('annie', And(Atom('In(CubeRed,Box1)'),Atom('In(CubeRed,Box1)')))
+    b = Diamond_a('sally', And(Atom('In(CubeRed,Box1)'),Atom('In(CubeRed,Box1)')))
+
     sally_k_box2 = ks.solve(f)
     sally_k_box1 = ks.solve(g)
     annie_k_box2 = ks.solve(h)
     annie_k_box1 = ks.solve(i)
+
+    annie_dia = ks.solve(a)
+    sally_dia = ks.solve(b)
     #TODO Detect false beliefs.
 
     assert True == True
