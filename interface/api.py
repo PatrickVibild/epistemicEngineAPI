@@ -7,6 +7,19 @@ import networkx as nx
 app = Flask(__name__)
 
 
+@app.route('/query_worlds_from_truth', methods=['GET'])
+def query_from_truth():
+    content = request.json
+    try:
+        from_world = DEL.world_nr - 1
+        too_world = int(content["too_world"])
+    except:
+        return 'missing arguments', 400
+    G = generate_graph(DEL)
+    paths = find_solutions(G, from_world, too_world, DEL.world_nr )
+    print(list(paths))
+    return paths, 200
+
 @app.route('/query_worlds_number', methods=['GET'])
 def query_worlds():
     content = request.json
@@ -69,4 +82,4 @@ def reset():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5500)

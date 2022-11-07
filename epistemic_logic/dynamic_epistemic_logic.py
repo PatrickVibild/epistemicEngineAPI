@@ -64,12 +64,12 @@ class DEL:
             predicates_str = event.split('AND')
             for predicate_str in predicates_str:
                 predicate_str.strip()
-                if predicate_str[0] is '~':
+                if predicate_str[0] == '~':
                     predicates.append(NoPredicate(predicate_str[1:]))
                 else:
                     predicates.append(Predicate(predicate_str))
         else:
-            if event[0] is '~':
+            if event[0] == '~':
                 predicates.append(NoPredicate(event[1:]))
             else:
                 predicates.append(Predicate(event))
