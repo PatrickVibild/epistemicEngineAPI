@@ -2,7 +2,7 @@ import copy
 
 from epistemic_logic.predicates.knows import Knows
 from epistemic_logic.predicates.predicate import Predicate, NoPredicate
-from mlsolver.kripke import World
+from epistemic_logic.world import World
 
 
 class DEL:
@@ -115,12 +115,10 @@ class DEL:
                     copy_world.rename(DEL.assign_and_increment_worldnr())
                     copy_world.update_world(predicates)
                     # 2
-
                     for agent_relations in DEL.relations:
                         # making a copy to iterate since we gonna add objects to the iterated sets.
                         for relation in DEL.relations[agent_relations].copy():
                             # reflection and copied world.
-                            # TODO might be wrong this relation.
                             if relation[1] == relation[0] and relation[1] == copy_world.copy_of:
                                 if not (agent_relations in agents_sees_event):
                                     DEL.relations[agent_relations].add((copy_world.name, copy_world.copy_of))
@@ -234,6 +232,3 @@ class DEL:
                                 new_last.append(tmp)
                 lasts = new_last
         return k
-
-
-

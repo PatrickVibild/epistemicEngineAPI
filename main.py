@@ -1,37 +1,7 @@
 from flask import Flask, request
 from epistemic_logic.dynamic_epistemic_logic import DEL
-from epistemic_logic.graph.graph import *
-import matplotlib as pl
-import networkx as nx
 
 app = Flask(__name__)
-
-
-@app.route('/query_worlds_from_truth', methods=['GET'])
-def query_from_truth():
-    content = request.json
-    try:
-        from_world = DEL.world_nr - 1
-        too_world = int(content["too_world"])
-    except:
-        return 'missing arguments', 400
-    G = generate_graph(DEL)
-    paths = find_solutions(G, from_world, too_world, DEL.world_nr )
-    print(list(paths))
-    return paths, 200
-
-@app.route('/query_worlds_number', methods=['GET'])
-def query_worlds():
-    content = request.json
-    try:
-        from_world = int(content["from_world"])
-        too_world = int(content["too_world"])
-    except:
-        return 'missing arguments', 400
-    G = generate_graph(DEL)
-    paths = find_solutions(G, from_world, too_world, DEL.world_nr + 1)
-    print(list(paths))
-    return paths, 200
 
 
 @app.route('/event', methods=['POST'])
