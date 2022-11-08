@@ -22,7 +22,7 @@ class Predicate:
                collections.Counter(self.args) == collections.Counter(other.args)
 
     def __str__(self):
-        return '{}({})'.format(self.functor, ', '.join(self.args))
+        return '{}({})'.format(self.functor, ','.join(self.args))
 
     def is_negation(self, other):
         if not isinstance(other, NoPredicate):
@@ -39,7 +39,7 @@ class NoPredicate(Predicate):
         super(predicate_str)
 
     def __str__(self):
-        return '~{}({})'.format(self.functor, ', '.join(self.args))
+        return '~{}({})'.format(self.functor, ','.join(self.args))
 
     def __eq__(self, other):
         if not isinstance(other, NoPredicate):

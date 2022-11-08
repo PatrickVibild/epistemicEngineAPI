@@ -8,6 +8,8 @@ import copy
 
 from itertools import chain, combinations
 
+from epistemic_logic.predicates.predicate import NoPredicate
+
 
 class KripkeStructure:
     """
@@ -133,7 +135,10 @@ class World:
 
     def update_world(self, predicates):
         for predicate in predicates:
-            negated = predicate.negate()
-            if negated in self.assignment:
-                self.assignment.remove(negated)
-        self.assignment.extend(predicates)
+            if isinstance(predicate, NoPredicate):
+                negated = predicate.negate()
+                if negated in self.assignment:
+                    self.assignment.remove(negated)
+            else:
+                if not (predicate in self.assignment):
+                    self.assignment.append(predicate)

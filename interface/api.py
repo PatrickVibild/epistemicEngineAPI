@@ -43,8 +43,13 @@ def new_world():
     except:
         return 'missing arguments', 400
     DEL.update(agent, event)
-    # TODO return information
-    return "good", 200
+    DEL.crunch_worlds()
+    agent_knowledge = DEL.knowledge(DEL.world_nr + 1)
+    output = {}
+    for knowledge in agent_knowledge:
+        output[knowledge.agent] = knowledge.stringify()
+    output["world"] = [str(predicate) for predicate in DEL.current_world.assignment]
+    return output, 200
 
 
 @app.route('/sees', methods=['GET'])

@@ -1,5 +1,6 @@
 import copy
 
+from epistemic_logic.predicates.knows import Knows
 from epistemic_logic.predicates.predicate import Predicate, NoPredicate
 from mlsolver.kripke import World
 
@@ -42,7 +43,7 @@ class DEL:
             agent[1] = agent[1].upper()
             DEL.initialize_agents(agent[0])
             DEL.initialize_agents(agent[1])
-            if not(agent[1] in DEL.vision[agent[0]]):
+            if not (agent[1] in DEL.vision[agent[0]]):
                 DEL.vision[agent[0]].append(agent[1])
 
     @staticmethod
@@ -50,9 +51,9 @@ class DEL:
         for agent in vision:
             agent[0] = agent[0].upper()
             agent[1] = agent[1].upper()
-            if not(agent[0] in DEL.vision):
+            if not (agent[0] in DEL.vision):
                 raise ValueError('Agent: ' + agent[0] + ' not in database.')
-            if not(agent[1] in DEL.vision[agent[0]]):
+            if not (agent[1] in DEL.vision[agent[0]]):
                 continue
             DEL.vision[agent[0]].remove(agent[1])
 
@@ -121,7 +122,7 @@ class DEL:
                             # reflection and copied world.
                             # TODO might be wrong this relation.
                             if relation[1] == relation[0] and relation[1] == copy_world.copy_of:
-                                if not(agent_relations in agents_sees_event):
+                                if not (agent_relations in agents_sees_event):
                                     DEL.relations[agent_relations].add((copy_world.name, copy_world.copy_of))
                                 else:
                                     DEL.relations[agent_relations].add((copy_world.name, copy_world.name))
@@ -177,3 +178,62 @@ class DEL:
 
         if not (agent in DEL.relations):
             DEL.relations[agent] = set()
+
+    @staticmethod
+    def crunch_worlds():
+        # FIXME brute forced solution. Might be better to implement some data structure.
+        for world in DEL.worlds.copy():
+            if len(world.assignment) == 0:
+                # extend relations. a->b and b->c if b deleted then a->c
+                for agent in DEL.relations.copy():
+                    for relation in DEL.relations[agent].copy():
+                        if relation[1] == world.name:
+                            for direction in DEL.relations[agent].copy():
+                                if direction[0] == world.name and direction[0] != relation[1]:
+                                    DEL.relations[agent].add(
+                                        (relation[0], relation[1])
+                                    )
+                # delete world
+                DEL.worlds.remove(world)
+                # clean relations
+                for agent in DEL.relations.copy():
+                    for relation in DEL.relations[agent].copy():
+                        if relation[1] == world.name or relation[0] == world.name:
+                            DEL.relations[agent].remove(relation)
+
+    @staticmethod
+    def world_dictionary():
+        worlds = {}
+        for world in DEL.worlds:
+            worlds[world.name] = world.assignment
+        return worlds
+
+    # FIXME holy potato of for loops!
+    @staticmethod
+    def knowledge(deep):
+        worlds = DEL.world_dictionary()
+        k = []
+        from_reference = DEL.current_world.name
+        for agent in DEL.relations:
+            lasts = []
+            for relation in DEL.relations[agent]:
+                if relation[0] == from_reference:
+                    agent_knowledge = Knows(agent, worlds[relation[1]], relation[1])
+                    k.append(agent_knowledge)
+                    lasts.append(agent_knowledge)
+            for i in range(deep):
+                new_last = []
+                for last_k in lasts:
+                    for target_agent in DEL.relations:
+                        if last_k.agent == target_agent:
+                            continue
+                        for relation in DEL.relations[target_agent]:
+                            if last_k.pointing_w == relation[0]:
+                                tmp = Knows(target_agent, worlds[relation[1]], relation[1])
+                                last_k.add_next_knowledge(tmp)
+                                new_last.append(tmp)
+                lasts = new_last
+        return k
+
+
+
