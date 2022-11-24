@@ -13,7 +13,6 @@ def new_world():
     except:
         return 'missing arguments', 400
     DEL.update(agent, event)
-    DEL.crunch_worlds()
     return return_world(), 200
 
 

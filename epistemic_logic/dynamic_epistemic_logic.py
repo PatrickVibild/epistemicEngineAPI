@@ -38,13 +38,13 @@ class DEL:
 
     @staticmethod
     def update_vision(vision):
-        for agent in vision:
-            agent[0] = agent[0].upper()
-            agent[1] = agent[1].upper()
-            DEL.initialize_agents(agent[0])
-            DEL.initialize_agents(agent[1])
-            if not (agent[1] in DEL.vision[agent[0]]):
-                DEL.vision[agent[0]].append(agent[1])
+        for agents in vision:
+            agents[0] = agents[0].upper()
+            agents[1] = agents[1].upper()
+            DEL.initialize_agents(agents[0])
+            DEL.initialize_agents(agents[1])
+            if not (agents[1] in DEL.vision[agents[0]]):
+                DEL.vision[agents[0]].append(agents[1])
 
     @staticmethod
     def remove_vision(vision):
@@ -58,13 +58,13 @@ class DEL:
             DEL.vision[agent[0]].remove(agent[1])
 
     @staticmethod
-    def update(agent, event):
-        event.strip()
+    def update(agent: object, event: object) -> object:
+        event = event.strip()
         predicates = []
         if 'AND' in event:
             predicates_str = event.split('AND')
             for predicate_str in predicates_str:
-                predicate_str.strip()
+                predicate_str = predicate_str.strip()
                 if predicate_str[0] == '~':
                     predicates.append(NoPredicate(predicate_str[1:]))
                 else:
@@ -113,7 +113,7 @@ class DEL:
                 copied_mapping_to_from = {}
                 for world in DEL.worlds:
                     # 1.0
-                    agents_knowledge = DEL.knowledge(DEL.world_nr + 1)
+                    agents_knowledge = DEL.knowledge(len(DEL.worlds) + 1)
                     modifiable_world = False
                     for a in agents_sees_event:
                         for a_k in agents_knowledge:
@@ -121,8 +121,10 @@ class DEL:
                                 modifiable_world = True
                                 break
                     # If agent that beliefs in the current world has not seeing the event we skip world.
-                    if not modifiable_world:
+                    if modifiable_world:
+                        world.update_world(predicates)
                         continue
+
                     # 1
                     child_world = world.create_child(DEL.assign_and_increment_worldnr(), predicates)
                     if DEL.current_world == world:
@@ -137,10 +139,6 @@ class DEL:
                                     DEL.relations[agent_relation].add((child_world.name, child_world.copy_of))
                                 else:
                                     DEL.relations[agent_relation].add((child_world.name, child_world.name))
-
-
-
-
 
                     copied_worlds.append(child_world)
                     copied_worlds_name.append(child_world.name)
@@ -169,29 +167,12 @@ class DEL:
                                     copied_mapping_to_from[relation[1]]
                                 ))
                             except:
-                                print()
-
-                # 4.1
-                # TODO Not sure if needed.
-                # mapped = False
-                # reflections = {}
-                # for agent_relation in DEL.relations:
-                #     reflections[agent_relation] = []
-                #     for relation in DEL.relations[agent_relation]:
-                #         # checking if there is a relation from world that is not reflective.
-                #         if relation[0] == child_world.name and relation[0] != relation[1]:
-                #             mapped = True
-                #         if relation[0] == relation[1]:
-                #             reflections[agent_relation].append(relation[0])
-                # if the world is not mapped, the the world must have a reflexion relation. We extend that to
-                # parent
-                # if not mapped:
-                #     for agent_relation in DEL.relations:
-                #         if reflections[agent_relation].__contains__(child_world.name):
-                #             DEL.relations[agent_relation].add((child_world.name, child_world.copy_of))
+                                print('ups')
 
                 # Last we add new worlds to DEL worlds.
                 DEL.worlds.extend(copied_worlds)
+                # now we delete empty worlds and fix relations.
+                DEL.crunch_worlds()
 
     @staticmethod
     def all_agents_sees(target_agent) -> bool:
