@@ -131,7 +131,7 @@ class DEL:
                                 if not (agent_relation in agents_sees_event):
                                     DEL.relations[agent_relation].add((child_world.name, child_world.copy_of))
                                 else:
-                                    DEL.relations[agent_relation].add((child_world.name, copy_world.name))
+                                    DEL.relations[agent_relation].add((child_world.name, child_world.name))
                     copied_worlds.append(child_world)
                     copied_worlds_name.append(child_world.name)
                     copied_mapping.update({child_world.name: child_world.copy_of})
