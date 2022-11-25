@@ -13,8 +13,13 @@ def new_world():
     except:
         return 'missing arguments', 400
     DEL.update(agent, event)
-    DEL.crunch_worlds()
-    return return_world(), 200
+    # DEL.crunch_worlds()
+    agent_knowledge = DEL.knowledge(DEL.world_nr + 1)
+    output = {}
+    for knowledge in agent_knowledge:
+        output[knowledge.agent] = knowledge.stringify()
+    output["world"] = [str(predicate) for predicate in DEL.current_world.assignment]
+    return output, 200
 
 
 @app.route('/sees', methods=['GET'])
@@ -29,8 +34,7 @@ def add_sees():
         DEL.update_vision(content["sees"])
     except Exception as e:
         return str(e), 500
-
-    return return_world(), 200
+    return DEL.vision, 200
 
 
 @app.route('/sees', methods=['DELETE'])
@@ -40,7 +44,7 @@ def delete_sees():
         DEL.remove_vision(content["sees"])
     except Exception as e:
         return str(e), 500
-    return return_world(), 200
+    return DEL.vision, 200
 
 
 @app.route('/reset', methods=['PUT'])
@@ -50,17 +54,6 @@ def reset():
         return "DEL-reseted", 200
     except Exception as e:
         return str(e), 500
-
-
-def return_world():
-    output = {}
-    if len(DEL.worlds) > 0:
-        agent_knowledge = DEL.knowledge(DEL.world_nr + 1)
-        for knowledge in agent_knowledge:
-            output[knowledge.agent] = knowledge.stringify()
-        output["world"] = [str(predicate) for predicate in DEL.current_world.assignment]
-    output["sees"] = DEL.vision
-    return output
 
 
 if __name__ == '__main__':
