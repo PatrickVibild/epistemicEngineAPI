@@ -1,3 +1,4 @@
+import collections
 import copy
 
 from epistemic_logic.predicates.knows import Knows
@@ -42,13 +43,13 @@ class DEL:
 
     @staticmethod
     def update_vision(vision):
-        for agent in vision:
-            agent[0] = agent[0].upper()
-            agent[1] = agent[1].upper()
-            DEL.initialize_agents(agent[0])
-            DEL.initialize_agents(agent[1])
-            if not (agent[1] in DEL.vision[agent[0]]):
-                DEL.vision[agent[0]].append(agent[1])
+        for agents in vision:
+            agents[0] = agents[0].upper()
+            agents[1] = agents[1].upper()
+            DEL.initialize_agents(agents[0])
+            DEL.initialize_agents(agents[1])
+            if not (agents[1] in DEL.vision[agents[0]]):
+                DEL.vision[agents[0]].append(agents[1])
 
     @staticmethod
     def remove_vision(vision):
@@ -62,13 +63,13 @@ class DEL:
             DEL.vision[agent[0]].remove(agent[1])
 
     @staticmethod
-    def update(agent, event):
-        event.strip()
+    def update(agent: object, event: object) -> object:
+        event = event.strip()
         predicates = []
         if 'AND' in event:
             predicates_str = event.split('AND')
             for predicate_str in predicates_str:
-                predicate_str.strip()
+                predicate_str = predicate_str.strip()
                 if predicate_str[0] == '~':
                     predicates.append(NoPredicate(predicate_str[1:]))
                 else:
@@ -112,46 +113,77 @@ class DEL:
                 copied_mapping = {}
                 copied_mapping_to_from = {}
                 for world in DEL.worlds:
-                    # 1
-                    copy_world = copy.deepcopy(world)
-                    if DEL.current_world == world:
-                        DEL.current_world = copy_world
-                    copy_world.rename(DEL.assign_and_increment_worldnr())
-                    copy_world.update_world(predicates)
-                    # 2
+                    reflexion_to_world = []
                     for agent_relations in DEL.relations:
+                        for relation in DEL.relations[agent_relations]:
+                            if relation[0] == relation[1] == world.name:
+                                reflexion_to_world.append(agent_relations)
+                    # in case that all agents that sees the events, are the only one who sees this world, we update value and not copy world.
+                    if collections.Counter(reflexion_to_world) == collections.Counter(agents_sees_event):
+                        world.update_world(predicates)
+                        continue
+                    # 1
+                    child_world = world.create_child(DEL.assign_and_increment_worldnr(), predicates)
+                    if DEL.current_world == world:
+                        DEL.current_world = child_world
+                    # 2
+                    for agent_relation in DEL.relations:
                         # making a copy to iterate since we gonna add objects to the iterated sets.
-                        for relation in DEL.relations[agent_relations].copy():
+                        for relation in DEL.relations[agent_relation].copy():
                             # reflection and copied world.
-                            if relation[1] == relation[0] and relation[1] == copy_world.copy_of:
-                                if not (agent_relations in agents_sees_event):
-                                    DEL.relations[agent_relations].add((copy_world.name, copy_world.copy_of))
+                            if relation[1] == relation[0] and relation[1] == child_world.copy_of:
+                                if not (agent_relation in agents_sees_event):
+                                    DEL.relations[agent_relation].add((child_world.name, child_world.copy_of))
                                 else:
-                                    DEL.relations[agent_relations].add((copy_world.name, copy_world.name))
-                    copied_worlds.append(copy_world)
-                    copied_worlds_name.append(copy_world.name)
-                    copied_mapping.update({copy_world.name: copy_world.copy_of})
-                    copied_mapping_to_from.update({copy_world.copy_of: copy_world.name})
+                                    DEL.relations[agent_relation].add((child_world.name, child_world.name))
+                    copied_worlds.append(child_world)
+                    copied_worlds_name.append(child_world.name)
+                    copied_mapping.update({child_world.name: child_world.copy_of})
+                    copied_mapping_to_from.update({child_world.copy_of: child_world.name})
                 # 3
                 # making copy of relations since relations are been removed when iterated.
-                for agent_relations in DEL.relations.copy():
-                    if agents_sees_event.__contains__(agent_relations):
+                for agent_relation in DEL.relations.copy():
+                    if agents_sees_event.__contains__(agent_relation):
                         continue  # do not remove relations for agents who sees the event.
-                    for relation in DEL.relations[agent_relations].copy():
+                    for relation in DEL.relations[agent_relation].copy():
                         if copied_worlds_name.__contains__(relation[1]) \
                                 and copied_worlds_name.__contains__(relation[0]):
-                            DEL.relations[agent_relations].remove(relation)
+                            DEL.relations[agent_relation].remove(relation)
                 # 4
                 # copying again the set since we modify the size.
-                for agent_relations in DEL.relations.copy():
-                    for relation in DEL.relations[agent_relations].copy():
+
+                for agent_relation in DEL.relations.copy():
+                    for relation in DEL.relations[agent_relation].copy():
                         # checking for relation in old world, and not reflexives,
                         if (relation[1] != relation[0]) and (not copied_worlds_name.__contains__(relation[1])) \
                                 and (not copied_worlds_name.__contains__(relation[0])):
-                            DEL.relations[agent_relations].add((
-                                copied_mapping_to_from[relation[0]],
-                                copied_mapping_to_from[relation[1]]
-                            ))
+                            try:
+                                DEL.relations[agent_relation].add((
+                                    copied_mapping_to_from[relation[0]],
+                                    copied_mapping_to_from[relation[1]]
+                                ))
+                            except:
+                                print()
+
+                # 4.1
+                # TODO Not sure if needed.
+                # mapped = False
+                # reflections = {}
+                # for agent_relation in DEL.relations:
+                #     reflections[agent_relation] = []
+                #     for relation in DEL.relations[agent_relation]:
+                #         # checking if there is a relation from world that is not reflective.
+                #         if relation[0] == child_world.name and relation[0] != relation[1]:
+                #             mapped = True
+                #         if relation[0] == relation[1]:
+                #             reflections[agent_relation].append(relation[0])
+                # if the world is not mapped, the the world must have a reflexion relation. We extend that to
+                # parent
+                # if not mapped:
+                #     for agent_relation in DEL.relations:
+                #         if reflections[agent_relation].__contains__(child_world.name):
+                #             DEL.relations[agent_relation].add((child_world.name, child_world.copy_of))
+
                 # Last we add new worlds to DEL worlds.
                 DEL.worlds.extend(copied_worlds)
 
@@ -183,9 +215,12 @@ class DEL:
 
     @staticmethod
     def crunch_worlds():
+        '''
+        Function that removes empty worlds and pass the relations overs. We skip the current world for crunching.
+        '''
         # FIXME brute forced solution. Might be better to implement some data structure.
         for world in DEL.worlds.copy():
-            if len(world.assignment) == 0:
+            if len(world.assignment) == 0 and world.name != DEL.current_world.name:
                 # extend relations. a->b and b->c if b deleted then a->c
                 for agent in DEL.relations.copy():
                     for relation in DEL.relations[agent].copy():
