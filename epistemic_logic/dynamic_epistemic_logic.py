@@ -12,7 +12,11 @@ class DEL:
     agents = []
     worlds = []
     vision = {}
+    max_worlds = -1
 
+    @staticmethod
+    def set_max_worlds(max_worlds):
+        DEL.max_worlds = max_worlds
     @staticmethod
     def assign_and_increment_worldnr() -> int:
         nr = DEL.world_nr
@@ -198,6 +202,14 @@ class DEL:
                     for relation in DEL.relations[agent].copy():
                         if relation[1] == world.name or relation[0] == world.name:
                             DEL.relations[agent].remove(relation)
+
+        if 0 < DEL.max_worlds < len(DEL.worlds):
+            to_delete = len(DEL.worlds) - DEL.max_worlds
+            for idx, _ in enumerate(DEL.worlds.copy()):
+                if idx > to_delete:
+                    break
+                del DEL.worlds[idx]
+
 
     @staticmethod
     def world_dictionary():

@@ -4,6 +4,11 @@ from epistemic_logic.dynamic_epistemic_logic import DEL
 app = Flask(__name__)
 
 
+@app.route('/maxworlds', methods=['POST'])
+def max_worlds():
+    content = request.json
+    DEL.set_max_worlds(int(content["max"]))
+    return 'OK', 200
 @app.route('/event', methods=['POST'])
 def new_world():
     content = request.json
@@ -57,4 +62,5 @@ def reset():
 
 
 if __name__ == '__main__':
+
     app.run(host='0.0.0.0', port=5500)
