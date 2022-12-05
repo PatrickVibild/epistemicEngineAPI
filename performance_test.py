@@ -12,6 +12,7 @@ def experiment(runs):
         ["SALLY", "ANNIE"]
     ]
 
+    DEL.set_max_worlds(4096)
     for i in range(runs):
         start = time.time()
         DEL.update_vision(vision)
