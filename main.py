@@ -9,6 +9,22 @@ def max_worlds():
     content = request.json
     DEL.set_max_worlds(int(content["max"]))
     return 'OK', 200
+
+
+@app.route('/is_false_belief', methods=['GET'])
+def is_false_belief():
+    content = request.json
+    try:
+        agent = content['agent']
+        belief = content['belief']
+        agent = agent.upper()
+        belief = belief.upper()
+    except:
+        return 'wrong arguments', 400
+    result = DEL.check_false_belief(agent, belief)
+    return result, 200
+
+
 @app.route('/event', methods=['POST'])
 def new_world():
     content = request.json
@@ -59,7 +75,7 @@ def reset():
 def return_world():
     output = {}
     if len(DEL.worlds) > 0:
-        agent_knowledge = DEL.knowledge(max(DEL.world_nr + 1, 10))
+        agent_knowledge = DEL.knowledge(min(DEL.world_nr + 1, 10))
         for knowledge in agent_knowledge:
             output[knowledge.agent] = knowledge.stringify()
         output["world"] = [str(predicate) for predicate in DEL.current_world.assignment]
@@ -68,5 +84,4 @@ def return_world():
 
 
 if __name__ == '__main__':
-
     app.run(host='0.0.0.0', port=5500)

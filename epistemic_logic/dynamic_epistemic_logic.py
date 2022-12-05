@@ -18,6 +18,7 @@ class DEL:
     @staticmethod
     def set_max_worlds(max_worlds):
         DEL.max_worlds = max_worlds
+
     @staticmethod
     def assign_and_increment_worldnr() -> int:
         nr = DEL.world_nr
@@ -164,28 +165,6 @@ class DEL:
                                 ))
                             except:
                                 pass
-                        # print()
-
-                # 4.1
-                # TODO Not sure if needed.
-                # mapped = False
-                # reflections = {}
-                # for agent_relation in DEL.relations:
-                #     reflections[agent_relation] = []
-                #     for relation in DEL.relations[agent_relation]:
-                #         # checking if there is a relation from world that is not reflective.
-                #         if relation[0] == child_world.name and relation[0] != relation[1]:
-                #             mapped = True
-                #         if relation[0] == relation[1]:
-                #             reflections[agent_relation].append(relation[0])
-                # if the world is not mapped, the the world must have a reflexion relation. We extend that to
-                # parent
-                # if not mapped:
-                #     for agent_relation in DEL.relations:
-                #         if reflections[agent_relation].__contains__(child_world.name):
-                #             DEL.relations[agent_relation].add((child_world.name, child_world.copy_of))
-
-                # Last we add new worlds to DEL worlds.
                 DEL.worlds.extend(copied_worlds)
 
     @staticmethod
@@ -238,14 +217,22 @@ class DEL:
                     for relation in DEL.relations[agent].copy():
                         if relation[1] == world.name or relation[0] == world.name:
                             DEL.relations[agent].remove(relation)
+        DEL.world_cap()
 
+    @staticmethod
+    def world_cap():
+        deleted_worlds = []
         if 0 < DEL.max_worlds < len(DEL.worlds):
             to_delete = len(DEL.worlds) - DEL.max_worlds
             for idx, _ in enumerate(DEL.worlds.copy()):
                 if idx > to_delete:
                     break
+                deleted_worlds.append(idx)
                 del DEL.worlds[idx]
-
+        for agent in DEL.relations.copy():
+            for relation in DEL.relations[agent].copy():
+                if relation[1] in deleted_worlds or relation[0] in deleted_worlds:
+                    DEL.relations[agent].remove(relation)
 
     @staticmethod
     def world_dictionary():
@@ -254,7 +241,25 @@ class DEL:
             worlds[world.name] = world.assignment
         return worlds
 
-    # FIXME holy potato of for loops!
+    @staticmethod
+    def check_false_belief(agent: str, belief: str):
+        DEL.current_world
+        if belief[0] == '~':
+            p = NoPredicate(belief)
+        else:
+            p = Predicate(belief)
+        knowledge = DEL.knowledge(len(DEL.worlds) + 1)
+        for k in knowledge:
+            if k.agent == agent:
+                if p in k.info and p not in DEL.current_world.assignment:
+                    return 'False Belief'
+                if p in k.info and p in DEL.current_world.assignment:
+                    return 'Correct Belief'
+        return 'Agent do not belief'
+
+
+
+        print()
     @staticmethod
     def knowledge(deep):
         worlds = DEL.world_dictionary()
