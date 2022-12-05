@@ -16,14 +16,14 @@ def experiment(runs):
         start = time.time()
         DEL.update_vision(vision)
         DEL.update(agents[i % 2], 'IN(cube{0},box1)'.format(str(i)))
-        output = return_world()
+        # output = return_world()
         DEL.remove_vision(vision)
         DEL.update(agents[(i + 1) % 2], 'IN(cube{0},box2) AND ~IN(cube{1},box1)'.format(str(i), str(i)))
-        output = return_world()
-        if i % 10 == 0:
+        # output = return_world()
+        if i % 1 == 0:
             runtime = time.time() - start
             print('Run {0}: Worlds - {1}, Computation time - {2}'.format(str(i), str(len(DEL.worlds)), str(runtime)))
 
 
 if __name__ == '__main__':
-    experiment(100)
+    experiment(30)

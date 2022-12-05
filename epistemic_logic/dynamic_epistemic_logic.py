@@ -163,7 +163,8 @@ class DEL:
                                     copied_mapping_to_from[relation[1]]
                                 ))
                             except:
-                                print()
+                                pass
+                        # print()
 
                 # 4.1
                 # TODO Not sure if needed.

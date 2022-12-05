@@ -59,7 +59,7 @@ def reset():
 def return_world():
     output = {}
     if len(DEL.worlds) > 0:
-        agent_knowledge = DEL.knowledge(DEL.world_nr + 1)
+        agent_knowledge = DEL.knowledge(max(DEL.world_nr + 1, 10))
         for knowledge in agent_knowledge:
             output[knowledge.agent] = knowledge.stringify()
         output["world"] = [str(predicate) for predicate in DEL.current_world.assignment]
